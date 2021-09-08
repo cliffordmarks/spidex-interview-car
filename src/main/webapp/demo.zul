@@ -1,24 +1,116 @@
-<window title="Search" border="normal"
+<window title="Search" id="win1" width="100%" height="100%" border="normal"
 	apply="demo.getting_started.mvc.SearchController">
-	<hbox align="center">
-		Keyword:
-		<textbox id="keywordBox" />
-		<button id="searchButton" label="Search" iconSclass="z-icon-search" />
-	</hbox>
-	<listbox id="carListbox" emptyMessage="No car found in the result" height="160px" style="margin-top:10px">
-		<listhead>
-			<listheader label="Model" />
-			<listheader label="Make" />
-			<listheader label="Price" width="20%"/>
-		</listhead>
-		<template name="model">
-			<listitem>
-				<listcell label="${each.model}"></listcell>
-				<listcell label="${each.make}"></listcell>
-				<listcell>$<label value="${each.price}" /></listcell>
-			</listitem>
-		</template>
-	</listbox>
+
+	<zscript>
+	<![CDATA[
+		import demo.getting_started.mvc.CarComparator;
+		import java.util.Comparator;
+		Comparator comparatorOnModelAsc = new CarComparator("Model", true);
+		Comparator comparatorOnModelDesc = new CarComparator("Model", false);
+		Comparator comparatorOnMakeAsc = new CarComparator("Make", true);
+		Comparator comparatorOnMakeDesc = new CarComparator("Make", false);
+		Comparator comparatorOnPriceAsc = new CarComparator("Price", true);
+		Comparator comparatorOnPriceDesc = new CarComparator("Price", false);
+		Comparator comparatorOnColourAsc = new CarComparator("Colour", true);
+		Comparator comparatorOnColourDesc = new CarComparator("Colour", false);
+	]]>
+	</zscript>
+	<hlayout width="100%">
+		
+		<hlayout style="width:100%">
+			<vbox style="width:100%">
+				<hbox>
+					Keyword:
+					<textbox id="keywordBox" />
+					<button id="searchButton" label="Search" iconSclass="z-icon-search" />
+				</hbox>
+	
+				<hbox style="margin-top:10px;">
+					<listbox id="carListbox" mold="paging" pageSize="5" emptyMessage="No car found in the result" width="100%" height="300px">
+						<listhead>
+							<listheader label="Model" sortAscending="${comparatorOnModelAsc}" sortDescending="${comparatorOnModelDesc}"/>
+							<listheader label="Make" sortAscending="${comparatorOnMakeAsc}" sortDescending="${comparatorOnMakeDesc}"/>
+							<listheader label="Price" width="15%" sortAscending="${comparatorOnPriceAsc}" sortDescending="${comparatorOnPriceDesc}"/>
+							<listheader label="Colour" width="15%" sortAscending="${comparatorOnColourAsc}" sortDescending="${comparatorOnColourDesc}"/>
+						</listhead>
+						<template name="model">
+							<listitem>
+								<listcell label="${each.model}"></listcell>
+								<listcell label="${each.make}"></listcell>
+
+								<!--
+								for my ref you could use zk if statements
+								<zk if="${each.price gt 20001}">
+										<listcell>$<label style="font-weight:bold" value="${each.price}" /></listcell>
+								</zk>
+								-->
+								<choose>
+								    <when test="${(each.price lt 20001) and (each.price gt -1)}">
+										<listcell>$<label style="color:green;font-weight:bold" value="${each.price}" /></listcell>
+								    </when>
+								    <when test="${(each.price gt 20000) and (each.price lt 50001)}">
+										<listcell>$<label style="color:yellow;font-weight:bold" value="${each.price}" /></listcell>
+								    </when>
+								    <when test="${each.price gt 50000}">
+										<listcell>$<label style="color:red;font-weight:bold" value="${each.price}" /></listcell>
+								    </when>
+								    <otherwise>
+										<listcell>$<label style="font-weight:bold" value="${each.price}" /></listcell>
+								    </otherwise>
+								</choose>
+
+								<listcell label="${each.colour}"></listcell>
+
+							</listitem>
+						</template>
+					</listbox>
+
+					<checkbox  id="togglePaging" label="Limit Paging" visible="true">
+						<attribute name="onCheck"><![CDATA[
+						    carListbox.pagingChild.mold = "os".equals(carListbox.pagingChild.mold) ? "default" : "os";
+						    carListbox.pagingChild.pageSize = 5 == carListbox.pagingChild.pageSize ? carListbox.itemCount : 5;
+						]]></attribute>
+					</checkbox>
+
+					    <window id="win2" title="Add a Car" border="normal" width="200px" visible="false"
+					    		apply="demo.getting_started.mvc.AddCarController">    
+					        
+					        Model: <textbox constraint="no empty" id="tbModel" />
+					        Make: <textbox constraint="no empty" id="tbMake" />
+					        Description: <textbox constraint="no empty" id="tbDescription" />
+						    Preview: <textbox constraint="no empty" id="tbPreview" />
+					        Price: <intbox constraint="no negative,no zero" id="tbPrice" />
+					        Colour: <textbox id="tbColour" visible="false"/>
+							<selectbox id="colourSelectbox" model="${win2$composer.coloursModel}" >
+			                    <template name="model">
+			                        <label value="${each}" />
+			                    </template>
+			                </selectbox>
+						    <button id="saveCarButton" label="Save" iconSclass="z-icon-save">
+	    				    	<attribute name="onClick"><![CDATA[
+									 win1.visible=true;
+									 win2.visible=false;
+									addCarButton.visible=true;
+								]]></attribute>
+		
+						    </button> 
+	
+					    </window>    
+					        
+					    <button id="addCarButton" label="Add Car" iconSclass="z-icon-add" >
+					    	<attribute name="onClick"><![CDATA[
+					    	win2.doEmbedded();
+							addCarButton.visible=false;
+							]]></attribute>
+					    
+					    </button> 
+					    
+				</hbox>
+
+			</vbox>
+		</hlayout>
+	</hlayout>
+	
 	<hbox style="margin-top:20px" id="detailBox" visible="false">
 		<image id="previewImage" style="padding:10px" />
 		<vbox>
@@ -35,4 +127,7 @@
 			<label id="descriptionLabel" />
 		</vbox>
 	</hbox>
+
+
+	
 </window>

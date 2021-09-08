@@ -19,6 +19,7 @@ import org.zkoss.zul.ext.Selectable;
 import demo.getting_started.tutorial.Car;
 import demo.getting_started.tutorial.CarService;
 import demo.getting_started.tutorial.CarServiceImpl;
+import demo.getting_started.tutorial.Car.COLOUR_TYPES;
 
 public class SearchController extends SelectorComposer<Component> {
 
@@ -40,25 +41,29 @@ public class SearchController extends SelectorComposer<Component> {
 	private Image previewImage;
 	@Wire
 	private Component detailBox;
-	
+
 	private CarService carService = new CarServiceImpl();
 	
-	
+	/**
+	 * Life cycle method that will call search method to prepopulate the car list when the window loads. 
+	 */
 	public void doAfterCompose(Component component) throws Exception {
 		super.doAfterCompose(component);
 		search();
 	}
 	//access http://localhost:8080/demo.zul, use chrome
-	add all of thejava files etc to git first before doing any work
+
 	@Listen("onClick = #searchButton")
-	public void search(){
+	public void search() {
 		String keyword = keywordBox.getValue();
 		List<Car> result = carService.search(keyword);
-		carListbox.setModel(new ListModelList<Car>(result));
+		
+		carListbox.setModel(new ListModelList<Car>(result)); 
 	}
 	
 	@Listen("onSelect = #carListbox")
 	public void showDetail(){
+		//TODO: if(list has items then do then show details)
 		detailBox.setVisible(true);
 		
 		Set<Car> selection = ((Selectable<Car>)carListbox.getModel()).getSelection();
